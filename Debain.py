@@ -152,6 +152,7 @@ def run_extern_program():
     ask = input("Would you also like to run another external program from github (y/n): ")
 
     if (ask.lower() == "y"):
+        # creds to ponkio
         exec_command("curl https://raw.githubusercontent.com/ponkio/CyberPatriot/refs/heads/master/Linux_Ubuntu.sh | sh")
 
 def main():
