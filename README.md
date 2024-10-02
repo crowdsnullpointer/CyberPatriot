@@ -14,6 +14,9 @@ python3 Debain.py
 # Main focus
 > This program really focues on any debain-based distros like ubuntu. This script is not focused on securing server services like 'mysql'. All though 'ssh' is configured in this it is mainly used on both systems anyway.
 # ToDo
+<!-- TO DO:  Scrape readme (HTML) from cyberpatriot client to get users/adms -->
+<!-- TO DO: Add some colors -->
+<!-- TO DO: more debuging information -->
 > Scrape readme (HTML) from cyberpatriot client to get users/adms
 > Add some colors
 > more debuging information
