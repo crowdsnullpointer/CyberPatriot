@@ -11,6 +11,6 @@ cd CyberPatriot
 python3 Debain.py
 <!-- end:code block -->
 ---
-> Do not rely on this program as each serieco is uniuqe to each year in any CyberPatriot competion, this is more of a start automate as many things as possible
+> Do not rely on this program as each scenario is unique to each year in any CyberPatriot competion, this is more of a start to automate commands as possible.
 
 — CrowdstrikesNullPointer
