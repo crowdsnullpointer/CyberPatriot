@@ -17,9 +17,6 @@ python3 Debain.py
 <!-- TO DO:  Scrape readme (HTML) from cyberpatriot client to get users/adms -->
 <!-- TO DO: Add some colors -->
 <!-- TO DO: more debuging information -->
-> Scrape readme (HTML) from cyberpatriot client to get users/adms
-> Add some colors
-> more debuging information
 
 ---
 > Do not rely on this program as each scenario is unique to each year in any CyberPatriot competion, this is more of a start to automate commands as possible.
