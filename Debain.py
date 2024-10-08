@@ -1,6 +1,10 @@
 import os,subprocess
 from os import path
 from glob import glob
+from bs4 import BeautifulSoup
+
+# this needs to be changed
+URL = "https://www.uscyberpatriot.org/Pages/Readme/cp17_tr_e_ubu22_readme_2638hhs9sqyi.aspx"
 
 LIGHT_DM_PATH = "/etc/lightdm/lightdm.conf"
 SSHD_PATH = "/etc/ssh/sshd_config"
@@ -10,6 +14,11 @@ PAM_AUTH_PATH = "/etc/pam.d/common-auth"
 
 BACKUP_PERSONAL_FILES = open("media.log","w") #"media.log"
 BACKUP_DEL_USERS = open('delusers.log','w')
+
+WEB_ADMINS = []
+WEB_USERS = []
+
+
 
 def check_root():
     return os.geteuid() == 0
@@ -30,16 +39,56 @@ def full_upgrade():
         exec_command("echo 'deb http://security.ubuntu.com/ubuntu/ trusty-security universe main multiverse restricted' >> /etc/apt/sources.list")
     print("System has been fully updated!")
 
+
+def get_users_from_site():
+    #from bs4 import BeautifulSoup
+
+    #url = "https://www.uscyberpatriot.org/Pages/Readme/cp17_tr_e_ubu22_readme_2638hhs9sqyi.aspx"
+
+    req = requests.get(URL).text
+
+    soup = BeautifulSoup(req, 'html.parser')
+
+    pre_tag = soup.find_all('pre')[0].text.split("\n")
+
+    is_admin_group = False
+
+    for item in pre_tag:
+
+        item = item.strip()
+
+        if (item.startswith("Authorized Administrators")):
+            is_admin_group = True
+            continue
+        elif (item.startswith("Authorized Users")):
+            is_admin_group = False
+            continue
+        elif (item.startswith("password")):
+            continue
+        elif (item == ""):
+            continue
+
+    if (is_admin_group):
+
+        if ("you" in item):
+            item = item.replace("(you)","")
+        WEB_ADMINS.append(item)
+    elif (is_admin_group == False):
+        WEB_USERS.append(item)
+
+    if (len(WEB_USERS) > 0 and len(WEB_ADMINS) > 0):
+        return True
+
 def get_users():
     return exec_command("cat /etc/passwd | grep '/home/' | awk -F':' '{ print $1}'").strip().replace(" ","").split("\n")
 def get_adm_group():
     return exec_command("cat /etc/group | grep 'adm' | awk -F ':' '{ print $4 } '").strip().split(",")
 
 def remove_unwanted_admins():
-    
+
     list_of_adms = get_adm_group()
 
-    cyberpatriot_list_of_adms = ["kali"]
+    cyberpatriot_list_of_adms = WEB_ADMINS
 
     for adm in list_of_adms:
         if (adm not in cyberpatriot_list_of_adms):
@@ -60,7 +109,7 @@ def remove_media():
             #print(files)
             for file in files:
                 BACKUP_PERSONAL_FILES.writelines(file)
-    
+
     BACKUP_PERSONAL_FILES.close()
 
     print("Possible media found, check 'media.log' for all media that needs to be remove!")
@@ -71,7 +120,7 @@ def purge_malware():
 
 def configure_display_manager():
     if (path.exists(LIGHT_DM_PATH)):
-        exec_command(f"echo 'allow-guest=false' >> {LIGHT_DM_PATH} && systemctl restart lightdm.service") 
+        exec_command(f"echo 'allow-guest=false' >> {LIGHT_DM_PATH} && systemctl restart lightdm.service")
         print("Configured 'lightdm', disabled guest access!\nRestarting 'lightdm.server' now, screen may blackout.")
 
 def disable_root_nologin():
@@ -116,10 +165,10 @@ def fix_perm_locations():
 def find_unwanted_users():
     list_of_users = get_users()
 
-    cyberpatriot_list_of_users = ["kali"]
+    cyberpatriot_list_of_users = WEB_USERS
 
     for user in list_of_users:
-        
+
         if (user == " "):
             pass
 
@@ -134,7 +183,7 @@ def find_unwanted_users():
     print("Deleted all users that could be found, check 'delusers.log' to verify!")
 
 def secure_network():
-    
+
     exec_command("sudo apt install ufw && sudo ufw enable")
 
     commands = ["sudo sysctl -n net.ipv4.tcp_syncookies","echo 'net.ipv6.conf.all.disable_ipv6 = 1' | sudo tee -a /etc/sysctl.conf","echo 0 | sudo tee /proc/sys/net/ipv4/ip_forward","sudo echo 'net.ipv4.icmp_echo_ignore_all = 1' >> /etc/sysctl.conf"]
@@ -162,8 +211,10 @@ def main():
     secure_sshd()
     secure_network()
     remove_media()
+    if (get_users_from_site()):
+        print("Found users from cyberpatriot site readme.")
     find_unwanted_users()
-    fix_perm_locations()
+    #fix_perm_locations()
     remove_unwanted_admins()
 
 
