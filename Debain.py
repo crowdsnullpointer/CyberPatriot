@@ -1,4 +1,4 @@
-import os,subprocess
+import os,subprocess,requests
 from os import path
 from glob import glob
 from bs4 import BeautifulSoup
@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 URL = input("Please enter readme url from cyberpatriot: ")
 LIGHT_DM_PATH = "/etc/lightdm/lightdm.conf"
 SSHD_PATH = "/etc/ssh/sshd_config"
+LOGIN_DEF_PATH = "/etc/login.defs"
 UPDATE_PACKAGE_LIST_PATH = "/etc/apt/apt.conf.d/10periodic"
 PAM_COMMAND_PATH = "/etc/pam.d/common-passwd"
 PAM_AUTH_PATH = "/etc/pam.d/common-auth"
@@ -89,12 +90,26 @@ def remove_unwanted_admins():
 
     cyberpatriot_list_of_adms = WEB_ADMINS
 
+
+    blacklisted = []
+
     for adm in list_of_adms:
+
+        if ("syslog" in adm):
+            pass
+
         if (adm not in cyberpatriot_list_of_adms):
-            print(f"Found non-listed adm account, {adm} has been spotted!")
-            exec_command(f"sudo gpasswd -d {adm} adm")
-            exec_command(f"sudo gpasswd -d {adm} lpadmin")
-            exec_command(f"sudo gpasswd -d {adm} sudo")
+
+            blacklisted.append(adm)
+
+    printf(f"Found non-listed adm accounts\nAccounts: {blacklisted}")
+
+    if (input("Would you like remove non-listed accounts from the 'adm' group (y/n): ").lower() == 'n'):
+        return
+
+    for (adm in blacklisted):
+        exec_command(f"sudo gpasswd -d {adm} adm")
+        exec_command(f"sudo gpasswd -d {adm} sudo")
 
 def remove_media():
     MAIN_DIR = "/home"
@@ -168,16 +183,26 @@ def find_unwanted_users():
 
     cyberpatriot_list_of_users = WEB_USERS
 
+    blacklisted = []
+
     for user in list_of_users:
 
         if (user == " "):
             pass
 
         if (user not in cyberpatriot_list_of_users):
-            print(f"Found non-listed user, {user} is not in readme.")
-            exec_command(f"sudo userdel {user}")
-            #print(f"{user} has been deleted")
-            BACKUP_DEL_USERS.writelines(user)
+
+            blacklisted.append(user)
+
+    print(f"Found non-listed accounts\nAccounts: {blacklisted}")
+
+    if (input("Would you like to del non-listed users (y/n): ").lower() == "n"):
+        return
+
+    for (user in blacklisted):
+        exec_command(f"sudo deluser {user}")
+
+        BACKUP_DEL_USERS.writelines(f"{user}\n")
 
     BACKUP_DEL_USERS.close()
 
@@ -206,7 +231,7 @@ def run_extern_program():
         exec_command("curl https://raw.githubusercontent.com/ponkio/CyberPatriot/refs/heads/master/Linux_Ubuntu.sh | sh")
 
 def main():
-    full_upgrade()
+    #full_upgrade()
     #purge_malware()
     disable_root_nologin()
     secure_sshd()
@@ -217,8 +242,7 @@ def main():
     find_unwanted_users()
     #fix_perm_locations()
     remove_unwanted_admins()
-
-
+    full_upgrade()
 
     # if really needed, please go over the script before you run it!
     run_extern_program()
