@@ -11,9 +11,8 @@ cd CyberPatriot
 # Execute program
 sudo python3 Debain.py
 <!-- end:code block -->
-
+# Find insecure functions in c
 <!-- start:code block -->
-Find insecure functions in c
 
 #include <stdio.h>
 
