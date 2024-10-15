@@ -9,7 +9,7 @@ git clone https://github.com/crowdsnullpointer/CyberPatriot.git
 cd CyberPatriot
 
 # Execute program
-python3 Debain.py
+sudo python3 Debain.py
 <!-- end:code block -->
 
 # Main focus
